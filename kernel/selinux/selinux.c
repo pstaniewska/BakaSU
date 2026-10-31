@@ -22,6 +22,8 @@
 static u32 cached_su_sid __read_mostly = 0;
 static u32 cached_zygote_sid __read_mostly = 0;
 static u32 cached_init_sid __read_mostly = 0;
+static u32 cached_adbd_sid __read_mostly = 0;
+static u32 cached_zygote_next_sid __read_mostly = 0;
 u32 ksu_file_sid __read_mostly = 0;
 
 static int transive_to_domain(const char *domain, struct cred *cred, bool clear_exec_sid)
@@ -146,6 +148,18 @@ void cache_sid(void)
     }
 
     err = security_secctx_to_secid(INIT_CONTEXT, strlen(INIT_CONTEXT), &cached_init_sid);
+    err = security_secctx_to_secid("u:r:adbd:s0", strlen("u:r:adbd:s0"), &cached_adbd_sid);
+    if (err) {
+        cached_adbd_sid = 0;
+    }
+    {
+        char tmp[] = "u:r:zygote:s0";
+        tmp[8] = '1';
+        err = security_secctx_to_secid(tmp, strlen(tmp), &cached_zygote_next_sid);
+        if (err) {
+            cached_zygote_next_sid = 0;
+        }
+    }
     if (err) {
         pr_warn("Failed to cache init SID: %d\n", err);
         cached_init_sid = 0;
@@ -297,4 +311,13 @@ void escape_to_root_for_adb_root(void)
         return;
     }
     commit_creds(cred);
+}
+
+bool is_adbd(const struct cred *cred)
+{
+    return is_sid_match(cred, cached_adbd_sid, "u:r:adbd:s0");
+}
+bool is_zygote_next(const struct cred *cred)
+{
+    return false;
 }

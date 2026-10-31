@@ -60,3 +60,5 @@ extern u32 ksu_file_sid;
 void __init ksu_selinux_init();
 
 #endif
+bool is_adbd(const struct cred *cred);
+bool is_zygote_next(const struct cred *cred);
