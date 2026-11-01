@@ -41,8 +41,7 @@
         android:theme="@style/Theme.KernelSU"
         tools:targetApi="34"
         android:directBootAware="true"
-        android:zygotePreloadName="org.bakasu.bakasu.magica.AppZygotePreload">
-        <activity
+               <activity
             android:name=".ui.MainActivity"
             android:exported="true"
             android:enabled="true"
